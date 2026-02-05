@@ -1,0 +1,6 @@
+facility_id,facility_name,location,facility_type,capacity_tons_per_year,employees
+B0-FF001,Aurora Petrochemicals Complex,"Houston, United States",Petrochemical,720000,2100
+B0-FF002,Nordic Specialty Plastics Plant,"Odense, Denmark",Specialty Chemicals,220000,860
+B0-FF003,Horizon Polymers Campus,Singapore,Polymers,480000,1500
+B0-FF004,GreenLeaf Agrochem Ltd.,"Port Elizabeth, South Africa",Agrochemicals,310000,540
+B0-FF005,Zenith Industrial Gases Center,"Shanghai, China",Industrial Gases,900000,3200
