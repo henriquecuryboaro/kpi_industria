@@ -4,6 +4,7 @@ from pathlib import Path
 from datetime import datetime, date
 import plotly.express as px
 import plotly.graph_objects as go
+import numpy as np
 
 ## Título da página,layout
 st.set_page_config(page_title="Dashb",layout="wide")
@@ -57,6 +58,43 @@ def variavel_media(empresa,variavel,inicio,fim):
 
     return round(filtro_temporal.mean(skipna=True),2)
 
+@st.cache_data
+def ebitda_mensal_grafico(empresa,inicio,fim):
+    data_facility = data[(data['facility_name'] == empresa) & (data['year_month'] >= (pd.to_datetime(inicio))) & (data['year_month'] <= (pd.to_datetime(fim)))]
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Scatter(
+            x=data_facility['year_month'],
+            y=data_facility['ebitda'],
+            mode='markers',
+            name='EBITDA mensal'
+        )
+    )
+    
+    fig.update_layout(yaxis=dict(title='EBITDA mensal',tickprefix="US$", tickformat=",.2f"), title_text='Valores mensais de EBITDA')
+
+    return fig
+
+@st.cache_data
+def capacidade_mensal_grafico(empresa,inicio,fim):
+    data_facility = data[(data['facility_name'] == empresa) & (data['year_month'] >= (pd.to_datetime(inicio))) & (data['year_month'] <= (pd.to_datetime(fim)))]
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Scatter(
+            x=data_facility['year_month'],
+            y=data_facility['capacity_utilization_pct'],
+            mode='lines',
+            name='Utilização mensal da capacidade'
+        )
+    )
+    
+    fig.update_layout(yaxis=dict(title='Utilização da capacidade por mês',ticksuffix="%", tickformat=",.2f"), title_text='Valores mensais da utilização da capacidade da planta')
+
+    return fig
 
 def main():
 
@@ -71,25 +109,15 @@ def main():
     con2 = col2.container(key='comp_2')
 
     with con1:
-        kpi_escolhida = st.selectbox('Escolha o KPI',sorted(kpi_lista), index=None, placeholder='Indicadores', key=f'indicador')
-
         try:
           
-            data_facility = data[data['facility_name'] == facility_escolhida]
-            fig = px.scatter(
-                data_facility,
-                x=f'{kpi_escolhida}',
-                y='ebitda',
-                trendline="ols",
-                title=f'Relação: {kpi_escolhida} x EBITDA',
-            )
-
-            st.plotly_chart(fig)
+            fig_ebitda = ebitda_mensal_grafico(facility_escolhida,inicio,fim)
+            st.plotly_chart(fig_ebitda)
+            fig_capacidade = capacidade_mensal_grafico(facility_escolhida,inicio,fim)
+            st.plotly_chart(fig_capacidade)
 
         except:
             pass
-
-
 
     with con2:
        
@@ -113,13 +141,13 @@ def main():
                     mode = "gauge+number",
                     value = margem_ebitda_media,
                     gauge = {"axis": {"range":[0,100]}},
-                    title = {'text': "Margem EBITDA(%)"}))
+                    title = {'text': "Margem EBITDA média(%)"}))
 
-            col1.metric(label=f'Lucro bruto (em milhares)', value=f'US$ {somatorio_lucro}', border=True)
-            col1.metric(label=f'Receita (em milhares)', value=f'USS {somatorio_receita}', border=True)
+            col1.metric(label=f'Lucro bruto acumulado (em milhares)', value=f'US$ {somatorio_lucro}', border=True)
+            col1.metric(label=f'Receita acumulada (em milhares)', value=f'USS {somatorio_receita}', border=True)
             col1.plotly_chart(fig_oee, use_container_width=True)
-            col2.metric(label=f'Lucro líquido (em milhares', value=f'US$ {somatorio_lucro_liquido}', border=True)
-            col2.metric(label=f'EBITDA (em milhares)', value=f'US$ {somatorio_ebitda}', border=True)
+            col2.metric(label=f'Lucro líquido acumulado (em milhares)', value=f'US$ {somatorio_lucro_liquido}', border=True)
+            col2.metric(label=f'EBITDA acumulado (em milhares)', value=f'US$ {somatorio_ebitda}', border=True)
             col2.plotly_chart(fig_margem_ebitda, use_container_width=True)
 
         except:
