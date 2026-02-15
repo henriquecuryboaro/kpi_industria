@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 import numpy as np
 
 ## Título da página,layout
-st.set_page_config(page_title="Dashb",layout="wide")
+st.set_page_config(page_title="Painel - KPIs industriais",layout="wide")
 
 #Import dataset
 COMPLETE_PATH = Path(__file__).resolve().parent / 'chemical_industry_kpis_complete_expanded_v3.csv'
