@@ -110,9 +110,22 @@ def main():
 
     with con1:
         try:
-          
-            fig_ebitda = ebitda_mensal_grafico(facility_escolhida,inicio,fim)
-            st.plotly_chart(fig_ebitda)
+            
+            oee_medio = variavel_media(facility_escolhida,'oee_pct',inicio,fim)
+            fig_oee = go.Figure(go.Indicator(
+                    mode = "gauge+number",
+                    value = oee_medio,
+                    gauge = {"axis": {"range":[0,100]}},
+                    title = {'text': "OEE Médio (%)"}))
+            
+            fig_oee.update_layout(
+                            autosize=False,
+                            width=480, 
+                            height=320, 
+                            margin=dict(l=50, r=50, b=100, t=100, pad=4)
+                        )
+
+            st.plotly_chart(fig_oee, use_container_width=True)
             fig_capacidade = capacidade_mensal_grafico(facility_escolhida,inicio,fim)
             st.plotly_chart(fig_capacidade)
 
@@ -127,24 +140,10 @@ def main():
             somatorio_ebitda = variavel_agreg_periodo(facility_escolhida,'ebitda',inicio,fim)
             somatorio_lucro_liquido = variavel_agreg_periodo(facility_escolhida,'net_income',inicio,fim)
             somatorio_receita = variavel_agreg_periodo(facility_escolhida,'revenue',inicio,fim)
-            oee_medio = variavel_media(facility_escolhida,'oee_pct',inicio,fim)
             min_ev = 7*(variavel_agreg_periodo(facility_escolhida,'ebitda','2025-01-01','2025-12-31'))
             max_ev = 10*(variavel_agreg_periodo(facility_escolhida,'ebitda','2025-01-01','2025-12-31'))
             margem_ebitda_media = variavel_media(facility_escolhida,'ebitda_margin_pct',inicio,fim)
-
-            fig_oee = go.Figure(go.Indicator(
-                    mode = "gauge+number",
-                    value = oee_medio,
-                    gauge = {"axis": {"range":[0,100]}},
-                    title = {'text': "OEE Médio (%)"}))
-            
-            fig_oee.update_layout(
-                            autosize=False,
-                            width=480, 
-                            height=320, 
-                            margin=dict(l=50, r=50, b=100, t=100, pad=4) # Adjust margins as needed
-                        )
-            
+        
             with st.container(border=True):
                 st.write('#### Estimativas de valor de mercado baseados em valores típicos de múltiplos de EBITDA')
                 st.write('#### Valores mínimo e máximo definidos em 7 e 10 múltiplos')
@@ -153,13 +152,13 @@ def main():
             
             st.write('#### Indicadores financeiros e operacionais relativos ao período escolhido')
             col1, col2 = st.columns(2)
-            
+            fig_ebitda = ebitda_mensal_grafico(facility_escolhida,inicio,fim)
+            st.plotly_chart(fig_ebitda)
             col1.metric(label=f'Lucro bruto acumulado (em milhares)', value=f'US$ {somatorio_lucro}', border=True)
             col1.metric(label=f'Receita acumulada (em milhares)', value=f'USS {somatorio_receita}', border=True)            
             col2.metric(label=f'Lucro líquido acumulado (em milhares)', value=f'US$ {somatorio_lucro_liquido}', border=True)
             col2.metric(label=f'EBITDA acumulado (em milhares)', value=f'US$ {somatorio_ebitda}', border=True)
             st.metric(label=f'Margem EBITDA', value=f'{margem_ebitda_media}%', border=True)
-            st.plotly_chart(fig_oee, use_container_width=True)
 
         except:
             pass
