@@ -10,7 +10,7 @@ import numpy as np
 st.set_page_config(page_title="Dashb",layout="wide")
 
 #Import dataset
-COMPLETE_PATH = Path(__file__).resolve().parent / 'chemical_industry_kpis_complete_expanded_consistent.csv'
+COMPLETE_PATH = Path(__file__).resolve().parent / 'chemical_industry_kpis_complete_expanded_v3.csv'
 
 @st.cache_data
 def load_data(path_df):
@@ -68,7 +68,7 @@ def ebitda_mensal_grafico(empresa,inicio,fim):
         go.Scatter(
             x=data_facility['year_month'],
             y=data_facility['ebitda'],
-            mode='markers',
+            mode='lines',
             name='EBITDA mensal'
         )
     )
@@ -122,13 +122,14 @@ def main():
     with con2:
        
         try:
-            col1, col2 = st.columns(2)
+            
             somatorio_lucro = variavel_agreg_periodo(facility_escolhida,'gross_profit',inicio,fim)
             somatorio_ebitda = variavel_agreg_periodo(facility_escolhida,'ebitda',inicio,fim)
             somatorio_lucro_liquido = variavel_agreg_periodo(facility_escolhida,'net_income',inicio,fim)
             somatorio_receita = variavel_agreg_periodo(facility_escolhida,'revenue',inicio,fim)
-
             oee_medio = variavel_media(facility_escolhida,'oee_pct',inicio,fim)
+            min_ev = 7*(variavel_agreg_periodo(facility_escolhida,'ebitda','2025-01-01','2025-12-31'))
+            max_ev = 10*(variavel_agreg_periodo(facility_escolhida,'ebitda','2025-01-01','2025-12-31'))
             margem_ebitda_media = variavel_media(facility_escolhida,'ebitda_margin_pct',inicio,fim)
 
             fig_oee = go.Figure(go.Indicator(
@@ -137,18 +138,28 @@ def main():
                     gauge = {"axis": {"range":[0,100]}},
                     title = {'text': "OEE Médio (%)"}))
             
-            fig_margem_ebitda = go.Figure(go.Indicator(
-                    mode = "gauge+number",
-                    value = margem_ebitda_media,
-                    gauge = {"axis": {"range":[0,100]}},
-                    title = {'text': "Margem EBITDA média(%)"}))
-
+            fig_oee.update_layout(
+                            autosize=False,
+                            width=480, 
+                            height=320, 
+                            margin=dict(l=50, r=50, b=100, t=100, pad=4) # Adjust margins as needed
+                        )
+            
+            with st.container():
+                st.write('#### Estimativas de valor de mercado baseados em valores típicos de múltiplos de EBITDA')
+                st.write('#### Valores mínimo e máximo definidos em 7 e 10 múltiplos')
+                st.metric(label=f'Menor estimativa esperada para valor de mercado (em milhares)', value=f'USS$ {round(min_ev,2)}', border=True)
+                st.metric(label=f'Maior estimativa esperada para valor de mercado (em milhares)', value=f'USS$ {round(max_ev,2)}', border=True)
+            
+            st.write('#### Indicadores financeiros e operacionais relativos ao período escolhido')
+            col1, col2 = st.columns(2)
+            
             col1.metric(label=f'Lucro bruto acumulado (em milhares)', value=f'US$ {somatorio_lucro}', border=True)
-            col1.metric(label=f'Receita acumulada (em milhares)', value=f'USS {somatorio_receita}', border=True)
-            col1.plotly_chart(fig_oee, use_container_width=True)
+            col1.metric(label=f'Receita acumulada (em milhares)', value=f'USS {somatorio_receita}', border=True)            
             col2.metric(label=f'Lucro líquido acumulado (em milhares)', value=f'US$ {somatorio_lucro_liquido}', border=True)
             col2.metric(label=f'EBITDA acumulado (em milhares)', value=f'US$ {somatorio_ebitda}', border=True)
-            col2.plotly_chart(fig_margem_ebitda, use_container_width=True)
+            st.metric(label=f'Margem EBITDA', value=f'{margem_ebitda_media}%', border=True)
+            st.plotly_chart(fig_oee, use_container_width=True)
 
         except:
             pass
