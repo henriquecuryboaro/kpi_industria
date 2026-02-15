@@ -145,7 +145,7 @@ def main():
                             margin=dict(l=50, r=50, b=100, t=100, pad=4) # Adjust margins as needed
                         )
             
-            with st.container():
+            with st.container(border=True):
                 st.write('#### Estimativas de valor de mercado baseados em valores típicos de múltiplos de EBITDA')
                 st.write('#### Valores mínimo e máximo definidos em 7 e 10 múltiplos')
                 st.metric(label=f'Menor estimativa esperada para valor de mercado (em milhares)', value=f'USS$ {round(min_ev,2)}', border=True)
