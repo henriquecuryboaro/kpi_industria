@@ -106,7 +106,7 @@ def main():
 
     col1,col2 = st.columns(2)
     con1 = col1.container(key='comp_1',border=True)
-    con2 = col2.container(key='comp_2')
+    con2 = col2.container(key='comp_2', border=True)
 
     with con1:
 
@@ -150,6 +150,21 @@ def main():
 
     with con2:
        
+        st.markdown(
+            """
+            <style>
+            .centered-text {
+                text-align: center;
+                font-size: 28px;
+            }
+            </style>
+            <div class="centered-text">
+                <strong>Indicadores para análise financeira da operação</strong><br><br>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
         try:
             
             somatorio_lucro = variavel_agreg_periodo(facility_escolhida,'gross_profit',inicio,fim)
@@ -170,7 +185,6 @@ def main():
                     }
                     </style>
                     <div class="centered-text">
-                        <strong>Indicadores para análise financeira da operação</strong><br>
                         Estimativa de valor de mercado da planta baseada em múltiplos de EBITDA (acumulado do ano de 2025)<br>
                     </div>
                     """,
@@ -179,7 +193,7 @@ def main():
                 st.metric(label=f'Menor estimativa esperada para valor de mercado (em milhares) - Sete múltiplos', value=f'US$ {round(min_ev,2)}', border=True)
                 st.metric(label=f'Maior estimativa esperada para valor de mercado (em milhares) - Dez múltiplos', value=f'US$ {round(max_ev,2)}', border=True)
             
-            st.write('#### Indicadores financeiros e operacionais relativos ao período escolhido')
+            st.write('#### Indicadores financeiros relativos ao período escolhido')
             col1, col2 = st.columns(2)
             fig_ebitda = ebitda_mensal_grafico(facility_escolhida,inicio,fim)
             st.plotly_chart(fig_ebitda)
