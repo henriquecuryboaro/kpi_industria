@@ -98,19 +98,35 @@ def capacidade_mensal_grafico(empresa,inicio,fim):
 
 def main():
 
-    st.write('# Indicadores operacionais em plantas industriais')
+    st.write('# Indicadores operacionais e financeiros em plantas industriais')
     st.sidebar.title('Menu de navegação')
     inicio = st.sidebar.date_input('### Início da série', min_value=date(2010, 1, 1), max_value=None)
     fim = st.sidebar.date_input('### Fim da série', min_value=date(2010, 1, 1), max_value=None)
     facility_escolhida = st.sidebar.selectbox('Escolha a planta',sorted(facilities_list), index=None, placeholder='Plantas', key=f'planta')
 
     col1,col2 = st.columns(2)
-    con1 = col1.container(key='comp_1')
+    con1 = col1.container(key='comp_1',border=True)
     con2 = col2.container(key='comp_2')
 
     with con1:
+
+        st.markdown(
+                        """
+                        <style>
+                        .centered-text {
+                            text-align: center;
+                            font-size: 28px;
+                        }
+                        </style>
+                        <div class="centered-text">
+                            <strong>Indicadores de natureza operacional</strong>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
         try:
-            
+                       
             oee_medio = variavel_media(facility_escolhida,'oee_pct',inicio,fim)
             fig_oee = go.Figure(go.Indicator(
                     mode = "gauge+number",
@@ -145,17 +161,30 @@ def main():
             margem_ebitda_media = variavel_media(facility_escolhida,'ebitda_margin_pct',inicio,fim)
         
             with st.container(border=True):
-                st.write('#### Estimativas de valor de mercado baseados em valores típicos de múltiplos de EBITDA')
-                st.write('#### Valores mínimo e máximo definidos em 7 e 10 múltiplos')
-                st.metric(label=f'Menor estimativa esperada para valor de mercado (em milhares)', value=f'USS$ {round(min_ev,2)}', border=True)
-                st.metric(label=f'Maior estimativa esperada para valor de mercado (em milhares)', value=f'USS$ {round(max_ev,2)}', border=True)
+                st.markdown(
+                    """
+                    <style>
+                    .centered-text {
+                        text-align: center;
+                        font-size: 28px;
+                    }
+                    </style>
+                    <div class="centered-text">
+                        <strong>Indicadores para análise financeira da operação</strong><br>
+                        Estimativa de valor de mercado da planta baseada em múltiplos de EBITDA (acumulado do ano de 2025)<br>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+                st.metric(label=f'Menor estimativa esperada para valor de mercado (em milhares) - Sete múltiplos', value=f'US$ {round(min_ev,2)}', border=True)
+                st.metric(label=f'Maior estimativa esperada para valor de mercado (em milhares) - Dez múltiplos', value=f'US$ {round(max_ev,2)}', border=True)
             
             st.write('#### Indicadores financeiros e operacionais relativos ao período escolhido')
             col1, col2 = st.columns(2)
             fig_ebitda = ebitda_mensal_grafico(facility_escolhida,inicio,fim)
             st.plotly_chart(fig_ebitda)
             col1.metric(label=f'Lucro bruto acumulado (em milhares)', value=f'US$ {somatorio_lucro}', border=True)
-            col1.metric(label=f'Receita acumulada (em milhares)', value=f'USS {somatorio_receita}', border=True)            
+            col1.metric(label=f'Receita acumulada (em milhares)', value=f'US$ {somatorio_receita}', border=True)            
             col2.metric(label=f'Lucro líquido acumulado (em milhares)', value=f'US$ {somatorio_lucro_liquido}', border=True)
             col2.metric(label=f'EBITDA acumulado (em milhares)', value=f'US$ {somatorio_ebitda}', border=True)
             st.metric(label=f'Margem EBITDA', value=f'{margem_ebitda_media}%', border=True)
