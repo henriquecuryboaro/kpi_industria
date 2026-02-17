@@ -63,6 +63,11 @@ def variavel_media(empresa,variavel,inicio,fim):
 @st.cache_data
 def ebitda_mensal_grafico(empresa,inicio,fim):
     data_facility = data[(data['facility_name'] == empresa) & (data['year_month'] >= (pd.to_datetime(inicio))) & (data['year_month'] <= (pd.to_datetime(fim)))]
+
+    if data_facility.empty:
+        st.warning("Selecione dados no menu de navegação ao lado para que indicadores sejam exibidos")
+        return None
+
     max_value = max(data_facility['ebitda'])
     fig = px.bar(data_facility, x='year_month',y='ebitda', range_y=[(0.8*max_value),(1.05*max_value)], title='EBITDA mensal')
     
@@ -73,6 +78,11 @@ def ebitda_mensal_grafico(empresa,inicio,fim):
 @st.cache_data
 def capacidade_mensal_grafico(empresa,inicio,fim):
     data_facility = data[(data['facility_name'] == empresa) & (data['year_month'] >= (pd.to_datetime(inicio))) & (data['year_month'] <= (pd.to_datetime(fim)))]
+
+    if data_facility.empty:
+        st.warning("Selecione dados no menu de navegação ao lado para que indicadores sejam exibidos")
+        return None
+
     max_value = max(data_facility['capacity_utilization_pct'])
     fig = px.bar(data_facility,x='year_month',y='capacity_utilization_pct',range_y=[(0.8*max_value),(1.05*max_value)],title='Utilização mensal da capacidade')
 
