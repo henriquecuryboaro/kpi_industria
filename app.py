@@ -17,8 +17,14 @@ def load_data(path_df):
     return pd.read_csv(path_df)
 
 data = load_data(COMPLETE_PATH)
+
 #remove linhas que apresentavam lucro líquido zero, valor inconsistente
 data = data[data['net_income'] != 0]
+
+#Correção de atributos 
+data['ebitda_margin_pct'] = 100*(data['ebitda']/data['revenue'])
+data['quality_pct'], data['availability_pct'], data['performance_pct']  = np.random.uniform(low=95.0,high=99.9,size=len(data)), np.random.uniform(low=95.0,high=99.9,size=len(data)), np.random.uniform(low=95.0,high=99.9,size=len(data))
+data['oee_pct'] = (data['performance_pct']*data['availability_pct']*data['quality_pct'])/10000
 
 #Separar variáveis por tipo (Categórico ou numérico)
 def SeparaTipo(data):
@@ -65,7 +71,7 @@ def ebitda_mensal_grafico(empresa,inicio,fim):
     data_facility = data[(data['facility_name'] == empresa) & (data['year_month'] >= (pd.to_datetime(inicio))) & (data['year_month'] <= (pd.to_datetime(fim)))]
 
     if data_facility.empty:
-        st.warning("Selecione dados no menu de navegação ao lado para que indicadores sejam exibidos")
+        st.info("Selecione dados no menu de navegação ao lado para que indicadores sejam exibidos")
         return None
 
     max_value = max(data_facility['ebitda'])
@@ -80,13 +86,28 @@ def capacidade_mensal_grafico(empresa,inicio,fim):
     data_facility = data[(data['facility_name'] == empresa) & (data['year_month'] >= (pd.to_datetime(inicio))) & (data['year_month'] <= (pd.to_datetime(fim)))]
 
     if data_facility.empty:
-        st.warning("Selecione dados no menu de navegação ao lado para que indicadores sejam exibidos")
+        st.info("Selecione dados no menu de navegação ao lado para que indicadores sejam exibidos")
         return None
 
     max_value = max(data_facility['capacity_utilization_pct'])
     fig = px.bar(data_facility,x='year_month',y='capacity_utilization_pct',range_y=[(0.8*max_value),(1.05*max_value)], labels={'year_month':'Período', 'capacity_utilization_pct':'Capacidade'})
 
     fig.update_layout(yaxis=dict(title='Utilização da capacidade por mês',ticksuffix="%", tickformat=",.2f"), title_text='Valores mensais da utilização da capacidade da planta')
+
+    return fig
+
+@st.cache_data
+def oee_mensal_grafico(empresa,inicio,fim):
+    data_facility = data[(data['facility_name'] == empresa) & (data['year_month'] >= (pd.to_datetime(inicio))) & (data['year_month'] <= (pd.to_datetime(fim)))]
+
+    if data_facility.empty:
+        st.info("Selecione dados no menu de navegação ao lado para que indicadores sejam exibidos")
+        return None
+
+    max_value = max(data_facility['oee_pct'])
+    fig = px.bar(data_facility,x='year_month',y='oee_pct',range_y=[(0.8*max_value),(1.05*max_value)], labels={'year_month':'Período', 'oee_pct':'OEE'})
+
+    fig.update_layout(yaxis=dict(title='OEE (%)',ticksuffix="%", tickformat=",.2f"), title_text='OEE mensal')
 
     return fig
 
@@ -118,24 +139,34 @@ def main():
                         """,
                         unsafe_allow_html=True
                     )
-
+        
+      
         try:
-                       
-            oee_medio = variavel_media(facility_escolhida,'oee_pct',inicio,fim)
-            fig_oee = go.Figure(go.Indicator(
-                    mode = "gauge+number",
-                    value = oee_medio,
-                    gauge = {"axis": {"range":[0,100]}},
-                    title = {'text': "OEE Médio (%)"}))
-            
-            fig_oee.update_layout(
-                            autosize=False,
-                            width=480, 
-                            height=320, 
-                            margin=dict(l=50, r=50, b=100, t=100, pad=4)
-                        )
+            with st.container(border=True):           
+                oee_medio = variavel_media(facility_escolhida,'oee_pct',inicio,fim)
+                qualidade_medio = variavel_media(facility_escolhida,'quality_pct',inicio,fim)
+                disponibilidade_medio = variavel_media(facility_escolhida,'availability_pct',inicio,fim)
+                performance_medio = variavel_media(facility_escolhida,'performance_pct',inicio,fim)
+                fig_oee = go.Figure(go.Indicator(
+                        mode = "gauge+number",
+                        value = oee_medio,
+                        gauge = {"axis": {"range":[0,100]}},
+                        title = {'text': "OEE Médio (%)"}))
+                
+                fig_oee.update_layout(
+                                autosize=False,
+                                width=480, 
+                                height=320, 
+                                margin=dict(l=50, r=50, b=100, t=100, pad=4)
+                            )
 
-            st.plotly_chart(fig_oee, use_container_width=True)
+                st.plotly_chart(fig_oee, use_container_width=True)
+                col1,col2,col3=st.columns(3)
+                col1.metric(label=f'Qualidade (valor médio)', value=f'{qualidade_medio}%', border=True)
+                col2.metric(label=f'Disponibilidade (valor médio)', value=f'{disponibilidade_medio}%', border=True)
+                col3.metric(label=f'Performance (valor médio)', value=f'{performance_medio}%', border=True)
+                oee_mensal_plot = oee_mensal_grafico(facility_escolhida,inicio,fim)                  
+                st.plotly_chart(oee_mensal_plot)
             fig_capacidade = capacidade_mensal_grafico(facility_escolhida,inicio,fim)
             st.plotly_chart(fig_capacidade)
             producao_total = variavel_agreg_periodo(facility_escolhida,'production_volume_tons',inicio,fim)
