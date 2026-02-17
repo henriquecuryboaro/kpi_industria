@@ -35,10 +35,8 @@ def SeparaTipo(data):
 
 num_cols, cat_cols, var_numericas, var_categoricas = SeparaTipo(data)
 
-#listas de empreendimentos e de métricas quantitativas utilizáveis como KPIs
+#listas de empreendimentos
 facilities_list = data['facility_name'].unique().tolist()
-kpi_lista = var_numericas
-indicadores_para_somatorios = ['downtime_hours','production_volume_tons','gross_profit','net_income']
 
 #converter data em formato string para 'datetime'
 # definir formato
@@ -111,6 +109,21 @@ def oee_mensal_grafico(empresa,inicio,fim):
 
     return fig
 
+@st.cache_data
+def inatividade_mensal_grafico(empresa,inicio,fim):
+    data_facility = data[(data['facility_name'] == empresa) & (data['year_month'] >= (pd.to_datetime(inicio))) & (data['year_month'] <= (pd.to_datetime(fim)))]
+
+    if data_facility.empty:
+        st.info("Selecione dados no menu de navegação ao lado para que indicadores sejam exibidos")
+        return None
+
+    max_value = max(data_facility['downtime_hours'])
+    fig = px.bar(data_facility,x='year_month',y='downtime_hours', range_y=[(0.8*max_value),(1.05*max_value)], labels={'year_month':'Período', 'downtime_hours':'Inatividade'})
+
+    fig.update_layout(yaxis=dict(title='Inatividade (h)', tickformat=",.2f"), title_text='Horas de inatividade por mês')
+
+    return fig
+
 def main():
 
     st.write('# Indicadores operacionais e financeiros em plantas industriais')
@@ -121,10 +134,6 @@ def main():
     inicio = st.sidebar.date_input('### Início da série', min_value=date(2010, 1, 1), max_value=date(2026, 1, 31))
     fim = st.sidebar.date_input('### Fim da série', min_value=date(2010, 1, 1), max_value=date(2026, 1, 31))
     facility_escolhida = st.sidebar.selectbox('Escolha a planta',sorted(facilities_list), index=None, placeholder='Plantas', key=f'planta')
-
-    # col1,col2 = st.columns(2)
-    # con1 = col1.container(key='comp_1',border=True)
-    # con2 = col2.container(key='comp_2', border=True)
 
     with tab1:
 
@@ -141,8 +150,7 @@ def main():
                         </div>
                         """,
                         unsafe_allow_html=True
-                    )
-        
+                    )        
       
         try:
             with st.container(border=True):           
@@ -158,20 +166,25 @@ def main():
                 
                 fig_oee.update_layout(
                                 autosize=False,
-                                width=480, 
-                                height=320, 
+                                width=540, 
+                                height=360, 
                                 margin=dict(l=50, r=50, b=100, t=100, pad=4)
                             )
-
-                st.plotly_chart(fig_oee, use_container_width=True)
-                col1,col2,col3=st.columns(3)
-                col1.metric(label=f'Qualidade (valor médio)', value=f'{qualidade_medio}%', border=True)
+                col1,col2 = st.columns(2)
+                col1.plotly_chart(fig_oee, use_container_width=True)
+                col2.metric(label=f'Qualidade (valor médio)', value=f'{qualidade_medio}%', border=True)
                 col2.metric(label=f'Disponibilidade (valor médio)', value=f'{disponibilidade_medio}%', border=True)
-                col3.metric(label=f'Performance (valor médio)', value=f'{performance_medio}%', border=True)
+                col2.metric(label=f'Performance (valor médio)', value=f'{performance_medio}%', border=True)
                 oee_mensal_plot = oee_mensal_grafico(facility_escolhida,inicio,fim)                  
                 st.plotly_chart(oee_mensal_plot)
+            
+            col1,col2 = st.columns(2)
+            con1 = col1.container(key='comp_1',border=True)
+            con2 = col2.container(key='comp_2', border=True)
             fig_capacidade = capacidade_mensal_grafico(facility_escolhida,inicio,fim)
-            st.plotly_chart(fig_capacidade)
+            con1.plotly_chart(fig_capacidade)
+            fig_inatividade = inatividade_mensal_grafico(facility_escolhida,inicio,fim)
+            con2.plotly_chart(fig_inatividade)
             producao_total = variavel_agreg_periodo(facility_escolhida,'production_volume_tons',inicio,fim)
             st.metric(label=f'Volume total de produção (toneladas)', value=f'{producao_total}', border=True)
 
