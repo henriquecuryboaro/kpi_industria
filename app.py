@@ -23,7 +23,7 @@ data = data[data['net_income'] != 0]
 
 #Correção de atributos 
 data['ebitda_margin_pct'] = 100*(data['ebitda']/data['revenue'])
-data['quality_pct'], data['availability_pct'], data['performance_pct']  = np.random.uniform(low=95.0,high=99.9,size=len(data)), np.random.uniform(low=95.0,high=99.9,size=len(data)), np.random.uniform(low=95.0,high=99.9,size=len(data))
+data['quality_pct'], data['availability_pct'], data['performance_pct']  = 100*(data['quality_pct']/data['quality_pct'].max()), 100*(data['availability_pct']/data['availability_pct'].max()), 100*(data['performance_pct']/data['performance_pct'].max())
 data['oee_pct'] = (data['performance_pct']*data['availability_pct']*data['quality_pct'])/10000
 
 #Separar variáveis por tipo (Categórico ou numérico)
@@ -103,7 +103,7 @@ def oee_mensal_grafico(empresa,inicio,fim):
         return None
 
     max_value = max(data_facility['oee_pct'])
-    fig = px.bar(data_facility,x='year_month',y='oee_pct',range_y=[(0.8*max_value),(1.05*max_value)], labels={'year_month':'Período', 'oee_pct':'OEE'})
+    fig = px.bar(data_facility,x='year_month',y='oee_pct',range_y=[(0.7*max_value),(1.05*max_value)], labels={'year_month':'Período', 'oee_pct':'OEE'})
 
     fig.update_layout(yaxis=dict(title='OEE (%)',ticksuffix="%", tickformat=",.2f"), title_text='OEE mensal')
 
@@ -154,7 +154,7 @@ def main():
       
         try:
             with st.container(border=True):           
-                oee_medio = variavel_media(facility_escolhida,'oee_pct',inicio,fim)
+                oee_medio = round(variavel_media(facility_escolhida,'oee_pct',inicio,fim),2)
                 qualidade_medio = variavel_media(facility_escolhida,'quality_pct',inicio,fim)
                 disponibilidade_medio = variavel_media(facility_escolhida,'availability_pct',inicio,fim)
                 performance_medio = variavel_media(facility_escolhida,'performance_pct',inicio,fim)
@@ -178,15 +178,24 @@ def main():
                 oee_mensal_plot = oee_mensal_grafico(facility_escolhida,inicio,fim)                  
                 st.plotly_chart(oee_mensal_plot)
             
-            col1,col2 = st.columns(2)
-            con1 = col1.container(key='comp_1',border=True)
-            con2 = col2.container(key='comp_2', border=True)
-            fig_capacidade = capacidade_mensal_grafico(facility_escolhida,inicio,fim)
-            con1.plotly_chart(fig_capacidade)
-            fig_inatividade = inatividade_mensal_grafico(facility_escolhida,inicio,fim)
-            con2.plotly_chart(fig_inatividade)
-            producao_total = variavel_agreg_periodo(facility_escolhida,'production_volume_tons',inicio,fim)
-            st.metric(label=f'Volume total de produção (toneladas)', value=f'{producao_total}', border=True)
+                col1,col2 = st.columns(2)
+                con1 = col1.container(key='comp_1',border=True)
+                con2 = col2.container(key='comp_2', border=True)
+                fig_capacidade = capacidade_mensal_grafico(facility_escolhida,inicio,fim)
+                con1.plotly_chart(fig_capacidade)
+                fig_inatividade = inatividade_mensal_grafico(facility_escolhida,inicio,fim)
+                con2.plotly_chart(fig_inatividade)
+                
+                col1,col2,col3 = st.columns(3)
+                con1 = col1.container(key='comp_pt')
+                con2 = col2.container(key='comp_ppe')
+                con3 = col3.container(key='comp_ept')
+                producao_total = variavel_agreg_periodo(facility_escolhida,'production_volume_tons',inicio,fim)
+                con1.metric(label=f'Volume total de produção (toneladas)', value=f'{producao_total}', border=True)
+                ppe_media = variavel_media(facility_escolhida,'production_per_employee',inicio,fim)
+                con2.metric(label=f'Média de produção por empregado (tonelada/empregado)', value=f'{ppe_media}', border=True)
+                ept_media = variavel_media(facility_escolhida,'energy_per_ton_mwh',inicio,fim)
+                con3.metric(label=f'Energia consumida por unidade (MWh/tonelada)', value=f'{ept_media}', border=True)
 
         except:
             pass
