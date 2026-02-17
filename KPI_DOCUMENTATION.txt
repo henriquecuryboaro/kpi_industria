@@ -1,0 +1,234 @@
+
+================================================================================
+CHEMICAL INDUSTRY KPI DATASET - DOCUMENTATION
+================================================================================
+
+OVERVIEW
+--------
+This synthetic dataset contains operational and financial data for 5 chemical 
+production facilities across 3 years (2023-2025), enabling comprehensive KPI 
+analysis including EBITDA and other critical metrics.
+
+Dataset Size: 5 facilities × ~36 months = 103 records
+
+================================================================================
+DATASET STRUCTURE
+================================================================================
+
+1. PRODUCTION FACILITIES (chemical_facilities.csv.gz)
+   - facility_id: Unique facility identifier
+   - facility_name: Name of the production facility
+   - location: City and country
+   - facility_type: Type of chemical production
+   - capacity_tons_per_year: Annual production capacity
+   - employees: Number of employees
+
+2. MONTHLY OPERATIONS (chemical_monthly_operations.csv.gz)
+   Raw operational and financial data by facility and month
+
+3. COMPLETE KPI DATASET (chemical_industry_kpis_complete.csv.gz)
+   All raw data plus calculated KPIs (52 columns total)
+
+================================================================================
+FINANCIAL KPIs
+================================================================================
+
+PRIMARY PROFITABILITY METRICS:
+
+1. EBITDA (Earnings Before Interest, Taxes, Depreciation, Amortization)
+   Formula: Gross Profit - Operating Expenses + Depreciation
+   Or: Revenue - COGS - Operating Expenses + Depreciation
+
+2. EBITDA Margin (%)
+   Formula: (EBITDA / Revenue) × 100
+   Benchmark: 10-20% is typical for chemical industry
+
+3. EBIT (Earnings Before Interest and Taxes)
+   Formula: EBITDA - Depreciation
+
+4. EBIT Margin (%)
+   Formula: (EBIT / Revenue) × 100
+
+5. Net Income
+   Formula: EBIT - Interest Expense - Tax Expense
+
+6. Net Margin (%)
+   Formula: (Net Income / Revenue) × 100
+
+7. Gross Profit
+   Formula: Revenue - Cost of Goods Sold (COGS)
+
+8. Gross Margin (%)
+   Formula: (Gross Profit / Revenue) × 100
+
+COST STRUCTURE:
+- Revenue: Total sales revenue (thousands USD)
+- COGS: Cost of Goods Sold (60-75% of revenue)
+  - Raw Material Costs (largest component)
+  - Labor Costs
+  - Energy Costs
+  - Maintenance Costs
+  - Depreciation
+- Operating Expenses: SG&A costs (10-20% of revenue)
+- Interest Expense: Cost of debt
+- Tax Expense: Corporate taxes
+
+================================================================================
+OPERATIONAL KPIs
+================================================================================
+
+PRODUCTION EFFICIENCY:
+
+1. Capacity Utilization (%)
+   Formula: (Actual Production / Maximum Capacity) × 100
+   Benchmark: 80-95% is optimal
+
+2. Yield Rate (%)
+   Formula: (Actual Output / Theoretical Output) × 100
+   Benchmark: 85-98% for chemical processes
+
+3. Overall Equipment Effectiveness (OEE %)
+   Formula: Availability × Performance × Quality
+   - Availability = (Total Time - Downtime) / Total Time
+   - Performance = Capacity Utilization
+   - Quality = 100% - Defect Rate
+   Benchmark: >85% is world-class
+
+4. Production Efficiency Score
+   Weighted composite: 40% Capacity + 30% Yield + 30% Batch Success
+
+5. Downtime Hours
+   Unplanned production stoppages per month
+
+QUALITY METRICS:
+
+6. Quality Defect Rate (%)
+   Percentage of production with quality issues
+   Benchmark: <2% is good
+
+7. Batch Success Rate (%)
+   Percentage of batches completed successfully
+   Benchmark: >95% is good
+
+COST EFFICIENCY:
+
+8. Cost per Ton Produced (USD)
+   Formula: (COGS × 1000) / Production Volume
+
+9. Revenue per Ton (USD)
+   Formula: (Revenue × 1000) / Production Volume
+
+10. Profit per Ton (USD)
+    Formula: Revenue per Ton - Cost per Ton
+
+RESOURCE EFFICIENCY:
+
+11. Energy per Ton (MWh/ton)
+    Formula: Energy Consumption / Production Volume
+
+12. Water per Ton (m³/ton)
+    Formula: Water Usage / Production Volume
+
+13. Waste per Ton Produced
+    Formula: Waste Generated / Production Volume
+
+LABOR PRODUCTIVITY:
+
+14. Revenue per Employee (USD)
+    Formula: (Revenue × 1000) / Number of Employees
+
+15. Production per Employee (tons)
+    Formula: Production Volume / Number of Employees
+
+SAFETY & ENVIRONMENTAL:
+
+16. Safety Score (0-100)
+    Formula: 100 - (Safety Incidents × 20)
+    Benchmark: >95 is excellent
+
+17. Environmental Score (0-100)
+    Formula: 100 - (Environmental Violations × 30)
+    Benchmark: 100 is target
+
+18. Safety Incidents
+    Number of safety incidents per month
+
+19. Environmental Violations
+    Number of environmental violations per month
+
+================================================================================
+KEY INSIGHTS FROM THE DATASET
+================================================================================
+
+Financial Performance:
+- Total Revenue: $3.8 billion (across all facilities/periods)
+- Total EBITDA: $550 million
+- Average EBITDA Margin: 13.13%
+- Average Net Margin: 7.16%
+
+Operational Performance:
+- Total Production: 3.27 million tons
+- Average Capacity Utilization: 87.70%
+- Average OEE: 86.41%
+- Average Cost per Ton: $1,369
+- Average Revenue per Ton: $1,854
+- Average Profit per Ton: $485
+
+Safety & Environment:
+- Average Safety Score: 97.48/100
+- Average Environmental Score: 99.13/100
+
+================================================================================
+USE CASES
+================================================================================
+
+1. Financial Analysis
+   - EBITDA trend analysis by facility and time
+   - Margin analysis and benchmarking
+   - Cost structure optimization
+   - Profitability drivers identification
+
+2. Operational Excellence
+   - Production efficiency monitoring
+   - OEE improvement initiatives
+   - Downtime reduction programs
+   - Quality improvement projects
+
+3. Cost Management
+   - Cost per ton benchmarking
+   - Energy efficiency programs
+   - Waste reduction initiatives
+   - Labor productivity analysis
+
+4. Strategic Planning
+   - Facility performance comparison
+   - Capacity expansion decisions
+   - Investment prioritization
+   - Resource allocation optimization
+
+5. Sustainability Reporting
+   - Environmental performance tracking
+   - Safety metrics monitoring
+   - Resource efficiency improvements
+   - ESG reporting
+
+================================================================================
+SAMPLE QUERIES & ANALYSIS
+================================================================================
+
+1. Calculate EBITDA by Facility:
+   GROUP BY facility_name, SUM(ebitda), AVG(ebitda_margin_pct)
+
+2. Identify Best Performing Facilities:
+   ORDER BY oee_pct DESC, ebitda_margin_pct DESC
+
+3. Trend Analysis:
+   GROUP BY year_month to see performance over time
+
+4. Cost Optimization Opportunities:
+   Identify facilities with high cost_per_ton or low profit_per_ton
+
+5. Efficiency Benchmarking:
+   Compare capacity_utilization_pct, oee_pct across facilities
+
+================================================================================
