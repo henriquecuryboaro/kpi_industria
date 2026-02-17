@@ -17,6 +17,8 @@ def load_data(path_df):
     return pd.read_csv(path_df)
 
 data = load_data(COMPLETE_PATH)
+#remove linhas que apresentavam lucro líquido zero, valor inconsistente
+data = data[data['net_income'] != 0]
 
 #Separar variáveis por tipo (Categórico ou numérico)
 def SeparaTipo(data):
@@ -61,17 +63,8 @@ def variavel_media(empresa,variavel,inicio,fim):
 @st.cache_data
 def ebitda_mensal_grafico(empresa,inicio,fim):
     data_facility = data[(data['facility_name'] == empresa) & (data['year_month'] >= (pd.to_datetime(inicio))) & (data['year_month'] <= (pd.to_datetime(fim)))]
-
-    fig = go.Figure()
-
-    fig.add_trace(
-        go.Scatter(
-            x=data_facility['year_month'],
-            y=data_facility['ebitda'],
-            mode='lines',
-            name='EBITDA mensal'
-        )
-    )
+    max_value = max(data_facility['ebitda'])
+    fig = px.bar(data_facility, x='year_month',y='ebitda', range_y=[(0.8*max_value),(1.05*max_value)], title='EBITDA mensal')
     
     fig.update_layout(yaxis=dict(title='EBITDA mensal',tickprefix="US$", tickformat=",.2f"), title_text='Valores mensais de EBITDA')
 
@@ -80,18 +73,9 @@ def ebitda_mensal_grafico(empresa,inicio,fim):
 @st.cache_data
 def capacidade_mensal_grafico(empresa,inicio,fim):
     data_facility = data[(data['facility_name'] == empresa) & (data['year_month'] >= (pd.to_datetime(inicio))) & (data['year_month'] <= (pd.to_datetime(fim)))]
+    max_value = max(data_facility['capacity_utilization_pct'])
+    fig = px.bar(data_facility,x='year_month',y='capacity_utilization_pct',range_y=[(0.8*max_value),(1.05*max_value)],title='Utilização mensal da capacidade')
 
-    fig = go.Figure()
-
-    fig.add_trace(
-        go.Scatter(
-            x=data_facility['year_month'],
-            y=data_facility['capacity_utilization_pct'],
-            mode='lines',
-            name='Utilização mensal da capacidade'
-        )
-    )
-    
     fig.update_layout(yaxis=dict(title='Utilização da capacidade por mês',ticksuffix="%", tickformat=",.2f"), title_text='Valores mensais da utilização da capacidade da planta')
 
     return fig
@@ -100,8 +84,8 @@ def main():
 
     st.write('# Indicadores operacionais e financeiros em plantas industriais')
     st.sidebar.title('Menu de navegação')
-    inicio = st.sidebar.date_input('### Início da série', min_value=date(2010, 1, 1), max_value=None)
-    fim = st.sidebar.date_input('### Fim da série', min_value=date(2010, 1, 1), max_value=None)
+    inicio = st.sidebar.date_input('### Início da série', min_value=date(2010, 1, 1), max_value=date(2026, 1, 31))
+    fim = st.sidebar.date_input('### Fim da série', min_value=date(2010, 1, 1), max_value=date(2026, 1, 31))
     facility_escolhida = st.sidebar.selectbox('Escolha a planta',sorted(facilities_list), index=None, placeholder='Plantas', key=f'planta')
 
     col1,col2 = st.columns(2)
@@ -164,7 +148,7 @@ def main():
             """,
             unsafe_allow_html=True
         )
-
+    
         try:
             
             somatorio_lucro = variavel_agreg_periodo(facility_escolhida,'gross_profit',inicio,fim)
