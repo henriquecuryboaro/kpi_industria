@@ -69,7 +69,7 @@ def ebitda_mensal_grafico(empresa,inicio,fim):
         return None
 
     max_value = max(data_facility['ebitda'])
-    fig = px.bar(data_facility, x='year_month',y='ebitda', range_y=[(0.8*max_value),(1.05*max_value)], title='EBITDA mensal')
+    fig = px.bar(data_facility, x='year_month',y='ebitda', range_y=[(0.8*max_value),(1.05*max_value)], labels={'year_month':'Período', 'capacity_utilization_pct':'EBITDA mensal'})
     
     fig.update_layout(yaxis=dict(title='EBITDA mensal',tickprefix="US$", tickformat=",.2f"), title_text='Valores mensais de EBITDA')
 
@@ -84,7 +84,7 @@ def capacidade_mensal_grafico(empresa,inicio,fim):
         return None
 
     max_value = max(data_facility['capacity_utilization_pct'])
-    fig = px.bar(data_facility,x='year_month',y='capacity_utilization_pct',range_y=[(0.8*max_value),(1.05*max_value)],title='Utilização mensal da capacidade')
+    fig = px.bar(data_facility,x='year_month',y='capacity_utilization_pct',range_y=[(0.8*max_value),(1.05*max_value)], labels={'year_month':'Período', 'capacity_utilization_pct':'Capacidade'})
 
     fig.update_layout(yaxis=dict(title='Utilização da capacidade por mês',ticksuffix="%", tickformat=",.2f"), title_text='Valores mensais da utilização da capacidade da planta')
 
@@ -138,6 +138,8 @@ def main():
             st.plotly_chart(fig_oee, use_container_width=True)
             fig_capacidade = capacidade_mensal_grafico(facility_escolhida,inicio,fim)
             st.plotly_chart(fig_capacidade)
+            producao_total = variavel_agreg_periodo(facility_escolhida,'production_volume_tons',inicio,fim)
+            st.metric(label=f'Volume total de produção (toneladas)', value=f'{producao_total}', border=True)
 
         except:
             pass
