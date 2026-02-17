@@ -21,10 +21,11 @@ data = load_data(COMPLETE_PATH)
 #remove linhas que apresentavam lucro líquido zero, valor inconsistente
 data = data[data['net_income'] != 0]
 
-#Correção de atributos 
+#Correção e inclusão de atributos
 data['ebitda_margin_pct'] = 100*(data['ebitda']/data['revenue'])
 data['quality_pct'], data['availability_pct'], data['performance_pct']  = 100*(data['quality_pct']/data['quality_pct'].max()), 100*(data['availability_pct']/data['availability_pct'].max()), 100*(data['performance_pct']/data['performance_pct'].max())
 data['oee_pct'] = (data['performance_pct']*data['availability_pct']*data['quality_pct'])/10000
+data['ebitda_per_unit'] = data['ebitda']/data['production_volume_tons']
 
 #Separar variáveis por tipo (Categórico ou numérico)
 def SeparaTipo(data):
@@ -226,6 +227,7 @@ def main():
             min_ev = 7*(variavel_agreg_periodo(facility_escolhida,'ebitda','2025-01-01','2025-12-31'))
             max_ev = 10*(variavel_agreg_periodo(facility_escolhida,'ebitda','2025-01-01','2025-12-31'))
             margem_ebitda_media = variavel_media(facility_escolhida,'ebitda_margin_pct',inicio,fim)
+            ebitda_perunit_medio = variavel_media(facility_escolhida,'ebitda_per_unit',inicio,fim)
         
             with st.container(border=True):
                 st.markdown(
@@ -245,15 +247,20 @@ def main():
                 st.metric(label=f'Menor estimativa esperada para valor de mercado (em milhares) - Sete múltiplos', value=f'US$ {round(min_ev,2)}', border=True)
                 st.metric(label=f'Maior estimativa esperada para valor de mercado (em milhares) - Dez múltiplos', value=f'US$ {round(max_ev,2)}', border=True)
             
-            st.write('#### Indicadores financeiros relativos ao período escolhido')
-            col1, col2 = st.columns(2)
-            fig_ebitda = ebitda_mensal_grafico(facility_escolhida,inicio,fim)
-            st.plotly_chart(fig_ebitda)
-            col1.metric(label=f'Lucro bruto acumulado (em milhares)', value=f'US$ {somatorio_lucro}', border=True)
-            col1.metric(label=f'Receita acumulada (em milhares)', value=f'US$ {somatorio_receita}', border=True)            
-            col2.metric(label=f'Lucro líquido acumulado (em milhares)', value=f'US$ {somatorio_lucro_liquido}', border=True)
-            col2.metric(label=f'EBITDA acumulado (em milhares)', value=f'US$ {somatorio_ebitda}', border=True)
-            st.metric(label=f'Margem EBITDA', value=f'{margem_ebitda_media}%', border=True)
+                st.write('#### Indicadores financeiros relativos ao período escolhido')
+                col1, col2 = st.columns(2)
+                fig_ebitda = ebitda_mensal_grafico(facility_escolhida,inicio,fim)
+                st.plotly_chart(fig_ebitda)
+                col1.metric(label=f'Lucro bruto acumulado (em milhares)', value=f'US$ {somatorio_lucro}', border=True)
+                col1.metric(label=f'Receita acumulada (em milhares)', value=f'US$ {somatorio_receita}', border=True)            
+                col2.metric(label=f'Lucro líquido acumulado (em milhares)', value=f'US$ {somatorio_lucro_liquido}', border=True)
+                col2.metric(label=f'EBITDA acumulado (em milhares)', value=f'US$ {somatorio_ebitda}', border=True)
+                
+                col1,col2 = st.columns(2)
+                con1 = col1.container(key='comp_margem')
+                con1.metric(label=f'Margem EBITDA', value=f'{margem_ebitda_media}%', border=True)
+                con2 = col2.container(key='comp_epu')
+                con2.metric(label=f'EBITDA por unida produzida (US$/tonelada)', value=f'{1000*ebitda_perunit_medio}', border=True)                
 
         except:
             pass
