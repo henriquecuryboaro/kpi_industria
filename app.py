@@ -115,15 +115,18 @@ def main():
 
     st.write('# Indicadores operacionais e financeiros em plantas industriais')
     st.sidebar.title('Menu de navegação')
+
+    tab1,tab2 = st.tabs(['Natureza operacional','Natureza financeira'])
+
     inicio = st.sidebar.date_input('### Início da série', min_value=date(2010, 1, 1), max_value=date(2026, 1, 31))
     fim = st.sidebar.date_input('### Fim da série', min_value=date(2010, 1, 1), max_value=date(2026, 1, 31))
     facility_escolhida = st.sidebar.selectbox('Escolha a planta',sorted(facilities_list), index=None, placeholder='Plantas', key=f'planta')
 
-    col1,col2 = st.columns(2)
-    con1 = col1.container(key='comp_1',border=True)
-    con2 = col2.container(key='comp_2', border=True)
+    # col1,col2 = st.columns(2)
+    # con1 = col1.container(key='comp_1',border=True)
+    # con2 = col2.container(key='comp_2', border=True)
 
-    with con1:
+    with tab1:
 
         st.markdown(
                         """
@@ -175,7 +178,7 @@ def main():
         except:
             pass
 
-    with con2:
+    with tab2:
        
         st.markdown(
             """
